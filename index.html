@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Wu Zonghan - IT Professional | Cloud Computing Enthusiast</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, user-scalable=no"
+    />
+    <meta name="description" content="Wu Zonghan's personal portfolio - IT student passionate about cloud computing, cybersecurity, and software development" />
+    <link rel="stylesheet" href="assets/css/main.css" />
+    <noscript
+      ><link rel="stylesheet" href="assets/css/noscript.css"
+    /></noscript>
+    <script src="js/vue.min.js" language="JavaScript"></script>
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <script src="js/html2canvas.min.js" async="async"></script>
+    <style>
+      img {
+        border-radius: 10px;
+      }
+      .skill-tag {
+        display: inline-block;
+        background: rgba(255,255,255,0.1);
+        padding: 5px 12px;
+        margin: 3px;
+        border-radius: 15px;
+        font-size: 0.85em;
+      }
+      .timeline-item {
+        text-align: left;
+        margin: 15px 0;
+        padding: 15px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 10px;
+        border-left: 3px solid #4fc3f7;
+      }
+      .timeline-item h3 {
+        margin: 0 0 8px 0;
+        color: #4fc3f7;
+        font-size: 1em;
+      }
+      .timeline-item p {
+        margin: 5px 0;
+        font-size: 0.9em;
+        opacity: 0.9;
+      }
+      .page-indicator {
+        font-size: 0.8em;
+        opacity: 0.6;
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+
+  <body class="is-preload">
+    <!-- Loader -->
+    <link rel="stylesheet" href="assets/css/loader.css" />
+    <div class="loader">
+      <div class="container">
+        <h1>☁️</h1>
+        <p>Loading</p>
+        <p>Cloud...</p>
+      </div>
+    </div>
+
+    <!-- Wrapper -->
+    <div id="wrapper">
+      <!-- Main -->
+      <section id="main">
+        <!-- Screenshot Button -->
+        <span
+          style="
+            display: flex;
+            position: fixed;
+            top: 2em;
+            right: 2em;
+            opacity: 0.65;
+            font-size: 0.8em;
+          "
+          v-show="backButton"
+          ><button class="button small" @click="screenShot" id="screenshot">
+            Save Screenshot
+          </button></span
+        >
+
+        <!-- Welcome Message and Contacts -->
+        <header v-show="Contacts">
+          <span class="avatar"
+            ><img
+              src="images/avatar.jpg"
+              alt="Wu Zonghan"
+              style="width: 122px; height: 122px"
+          /></span>
+          <h1>Wu Zonghan</h1>
+          <transition-group name="fade">
+            <div v-show="defaults" key="text">
+              <p>IT Student | Cloud Computing Enthusiast</p>
+              <p>
+                Passionate about cloud computing, cybersecurity, and software development. 
+                Building innovative solutions with a strong technical foundation.
+              </p>
+              <button
+                class="button small fit"
+                @click="showAbout"
+                v-bind:disabled="onTransition==1"
+              >
+                Explore My Portfolio →
+              </button>
+            </div>
+            <div
+              v-for="item in contacts"
+              v-if="item.show"
+              key="item.name"
+              v-html="item.content"
+            ></div>
+            <button
+              class="button small"
+              key="button"
+              @click="hideContact(true)"
+              style="opacity: 0.55"
+              v-show="backButton"
+            >
+              Back
+            </button>
+          </transition-group>
+        </header>
+        <hr />
+        <footer v-show="Contacts">
+          <ul class="icons">
+            <li v-for="item in contacts">
+              <a @click="showContact(item.name)" :class="item.icon"
+                >{{item.desc}}</a
+              >
+            </li>
+          </ul>
+        </footer>
+
+        <!-- Page container -->
+        <header v-show="info">
+          <transition-group name="fade">
+            <h1 key="title">{{ title }}</h1>
+            <p key="text" v-for="text in texts">{{ text }}</p>
+            <div v-html="html" key="html"></div>
+            <img
+              v-bind:src="img"
+              key="img"
+              style="width: 95%; height: auto"
+              v-for="img in imgs"
+            />
+            <div key="buttons">
+              <p class="page-indicator">{{ nowPage + 1 }} / {{ endPage }}</p>
+              <button
+                class="button small"
+                v-bind:disabled="(nowPage < startPage || onTransition==1)"
+                @click="navigate(-1)"
+              >
+                Previous
+              </button>
+              <button
+                class="button small"
+                v-bind:disabled="(nowPage >= endPage - 1 || onTransition==1)"
+                @click="navigate(1)"
+              >
+                Next
+              </button>
+            </div>
+            <hr key="br" />
+            <button
+              @click="returnToContact"
+              key="button"
+              class="button fit"
+              v-bind:disabled="onTransition==1"
+            >
+              Back to Home
+            </button>
+          </transition-group>
+        </header>
+      </section>
+
+      <!-- Footer -->
+      <footer id="footer"></footer>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+      if ("addEventListener" in window) {
+        window.addEventListener("load", function () {
+          document.body.className = document.body.className.replace(
+            /\bis-preload\b/,
+            ""
+          );
+        });
+        document.body.className += navigator.userAgent.match(/(MSIE|rv:11\.0)/)
+          ? " is-ie"
+          : "";
+      }
+    </script>
+    <!-- Vuejs -->
+    <script language="javascript">
+      var mainsec = new Vue({
+        el: "#main",
+        data: {
+          title: "", // The title of one page
+          html: "", // HTML text of one page
+          texts: [], // Pure texts of one page
+          imgs: [], // Image url of a page's images
+
+          startPage: 1, // First page of the website
+          endPage: 6, // The last page of the website
+
+          defaults: 1, // Show welcome message
+          Contacts: 1, // Detect if to show contacts
+          info: 0, // If to show designed pages
+          deg: 0, // Main section rotate deg
+
+          backButton: false,
+
+          /*          Change things below this line               */
+          //Contact info
+          /**
+           * 有关下方icon的优化
+           * 因下方icon可以挂上用户自己的站点，所以做了如下修改
+           * jump为true，会直接跳转链接，链接为用户自定义的content字段
+           * jump为false，则是与原来一样。
+           */
+          contacts: [
+            {
+              name: "Email",
+              icon: "icon solid fa-envelope",
+              desc: "Email",
+              content: "<h2>📧 Contact Me</h2><p>Feel free to reach out for collaboration opportunities!</p>",
+              show: false,
+              jump: false,
+            },
+            {
+              name: "LinkedIn",
+              icon: "icon brands fa-linkedin",
+              desc: "LinkedIn",
+              content: "https://linkedin.com",
+              show: false,
+              jump: true,
+            },
+            {
+              name: "Github",
+              icon: "icon brands fa-github",
+              desc: "Github",
+              content: "https://github.com",
+              show: false,
+              jump: true,
+            },
+          ],
+
+          //Pages content
+          page: [
+            {
+              title: "👤 About Me",
+              texts: [
+                "As a passionate IT student, I have a strong interest in cloud computing, cybersecurity, and software development. Through on-campus studies and practical projects, I have acquired a solid technical foundation and developed the ability to solve complex technical problems.",
+              ],
+              html: "<h3>✨ Key Traits</h3><p>• Excellent teamwork spirit</p><p>• Ability to continuously learn new technologies</p>",
+              imgs: [""],
+            },
+            {
+              title: "💡 Skills & Interests",
+              texts: [""],
+              html: "<div style='text-align:center'><span class='skill-tag'>☁️ Cloud Computing</span><span class='skill-tag'>🔐 Cybersecurity</span><span class='skill-tag'>🐍 Python</span><span class='skill-tag'>🗄️ Database Management</span><span class='skill-tag'>🐧 Linux Administration</span><span class='skill-tag'>⚡ Automation</span></div><br><p style='margin-top:15px'>I'm particularly interested in cloud computing architecture design, network security and protection, Python automation programming, database management, and Linux system administration.</p>",
+              imgs: [""],
+            },
+            {
+              title: "🎯 Career Goal",
+              texts: [
+                "My goal is to become a professional Cloud Architect.",
+                "As a student pursuing an advanced diploma in Cloud Computing and Data Center Management, I am committed to using my knowledge and skills to design and implement scalable, efficient, and secure cloud infrastructure to drive enterprise innovation and operational excellence."
+              ],
+              html: "<h3>Why Cloud Architecture?</h3><p>• Cloud computing is the future trend of the IT industry</p><p>• Strong interest in distributed systems and network architecture</p>",
+              imgs: [""],
+            },
+            {
+              title: "📋 Action Plan",
+              texts: [""],
+              html: "<div class='timeline-item'><h3>📌 Short-term (0-6 months)</h3><p>• Complete AWS Cloud Practitioner Certification</p><p>• Learn Python automation scripting</p><p>• Master Linux system administration</p></div><div class='timeline-item'><h3>📌 Medium-term (1-2 years)</h3><p>• Seek cloud computing-related internships</p><p>• Participate in open-source projects</p><p>• Establish a technical blog</p><p>• Build active GitHub contributions</p></div>",
+              imgs: [""],
+            },
+            {
+              title: "📚 Learning Roadmap",
+              texts: [""],
+              html: "<div class='timeline-item'><h3>💻 Programming Ability</h3><p><b>Skills:</b> Python, Bash scripting</p><p><b>Plan:</b> Learn through Codecademy and Coursera</p><p><b>Goal:</b> Become proficient in Python basics within 3 months</p></div><div class='timeline-item'><h3>☁️ Cloud Platform Knowledge</h3><p><b>Skills:</b> AWS, Azure, Google Cloud Platform</p><p><b>Plan:</b> Study official documentation + hands-on labs</p><p><b>Goal:</b> Pass cloud foundational certification within 6 months</p></div>",
+              imgs: [""],
+            },
+            {
+              title: "🚀 Portfolio Projects",
+              texts: [
+                "Coming Soon! I'm currently working on exciting projects to showcase my skills in cloud computing and automation."
+              ],
+              html: "<p style='text-align:center; opacity:0.7'>Stay tuned for updates on my GitHub!</p>",
+              imgs: [""],
+            },
+          ],
+          /*            Change ends here                 */
+
+          nowPage: 0, // Pointer to current page
+          onTransition: 0, //If the transition animation is on
+        },
+        methods: {
+          showContact: function (name) {
+            let num = 0;
+            for (let i = 0; i < this.contacts.length; i++) {
+              if (this.contacts[i].name == name) {
+                num = i;
+                break;
+              }
+            }
+            if (this.contacts[num].jump == true) {
+              window.open(this.contacts[num].content);
+              return;
+            }
+            this.hideContact(false);
+            this.defaults = 0;
+            clearTimeout(this.timer);
+            this.timer = setTimeout(() => {
+              this.contacts[num].show = true;
+              this.backButton = true;
+            }, 500);
+          },
+          hideContact: function (neededDefault = true) {
+            for (i = 0; i < this.contacts.length; i++) {
+              this.contacts[i].show = false;
+            }
+            clearTimeout(this.timer);
+            if (neededDefault == true) {
+              this.backButton = false;
+              this.timer = setTimeout(() => {
+                this.defaults = 1;
+              }, 500);
+            }
+          },
+          showAbout: function () {
+            this.rotateCard(-360, 1, "Y");
+
+            var that = this;
+            setTimeout(function () {
+              that.info = 1;
+              that.Contacts = 0;
+            }, 400);
+          },
+          returnToContact: function () {
+            this.rotateCard(360, 1, "Y");
+            var that = this;
+            setTimeout(function () {
+              that.info = 0;
+              that.Contacts = 1;
+            }, 400);
+          },
+          rotateCard: function (deg, time, axis) {
+            this.onTransition = 1;
+            this.deg += deg;
+            var ele = document.getElementById("main");
+            ele.style.transition = "transform " + time + "s 0s";
+            ele.style.transform = "rotate" + axis + "(" + this.deg + "deg)";
+            var that = this;
+            setTimeout(function () {
+              that.onTransition = 0;
+            }, time * 1000);
+          },
+          loadPage: function () {
+            this.title = this.page[this.nowPage].title;
+            this.texts = this.page[this.nowPage].texts;
+            this.html = this.page[this.nowPage].html;
+            this.imgs = this.page[this.nowPage].imgs;
+          },
+          navigate: function (m) {
+            if (m == 1) {
+              this.nowPage++;
+              this.rotateCard(-360, 1, "Y");
+              setTimeout("mainsec.loadPage()", 400);
+            }
+            if (m == -1) {
+              this.nowPage--;
+              this.rotateCard(+360, 1, "Y");
+              setTimeout("mainsec.loadPage()", 400);
+            }
+          },
+          screenShot: function () {
+            var button = document.getElementById("screenshot");
+            button.disabled = true;
+            button.innerHTML = "Capturing...";
+            html2canvas(document.body).then((canvas) => {
+              var w = window.open();
+              w.document.title = "Save Screenshot";
+              var i = w.document.createElement("img");
+              w.document.body.appendChild(i);
+              i.src = canvas.toDataURL("image/jpg");
+              w.alert("Long press the image or save it directly");
+              button.innerHTML = "Save Screenshot";
+              button.disabled = false;
+            });
+          },
+        },
+        mounted: function () {
+          this.loadPage();
+          this.startPage = 1;
+          this.endPage = this.page.length;
+        },
+      });
+    </script>
+    <style>
+      .fade-enter-active,
+      .fade-leave-active {
+        transition: all 0.5s;
+      }
+      .fade-enter,
+      .fade-leave-to {
+        opacity: 0;
+        transform: scale(0%, 0%);
+      }
+      .qr {
+        text-align: center;
+        width: 80%;
+        height: 80%;
+      }
+    </style>
+    <script>
+      let FirstTriggered = true;
+      function loaded() {
+        timeout = FirstTriggered ? 1200 : 0;
+        var page = getQueryVariable("page");
+        if (page >= mainsec.startPage && page <= mainsec.endPage && page) {
+          var m = mainsec;
+          mainsec.nowPage = page - 1;
+          setTimeout(function () {
+            m.rotateCard(-360, 1, "Y");
+            setTimeout(function () {
+              m.loadPage();
+              m.info = 1;
+              m.Contacts = 0;
+            }, 400);
+          }, timeout);
+        }
+        if (FirstTriggered) {
+          $("body").on("dblclick", "img", function () {
+            window.open(this.src);
+          });
+        }
+
+        FirstTriggered = false;
+      }
+    </script>
+    <script src="js/common.js"></script>
+  </body>
+</html>
